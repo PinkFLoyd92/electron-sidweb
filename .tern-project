@@ -1,0 +1,16 @@
+{
+    "plugins": {
+        "es_modules": {},
+        "hightlight": {},
+        "node": {},
+        "tern-react": {}
+    },
+    "libs": [
+        "ecma5",
+        "ecma6",
+        "jquery",
+        "browser",
+        "underscore"
+    ],
+    "ecmaVersion": 6
+}

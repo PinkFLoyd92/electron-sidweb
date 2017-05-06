@@ -20,7 +20,7 @@ PASSWORD = arrContens[1];
  **/
 
 function getTopics(){
-    return document.getElementsByClassName("announcement")[0].innerHTML;
+    return document.getElementById("topic_list").innerHTML;
 }
 
 // Do something according to a request of your mainview

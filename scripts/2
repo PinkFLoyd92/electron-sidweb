@@ -1,0 +1,15 @@
+module.exports = {
+    getContent: function($element) {
+	let splittedMessage = "";
+	console.info("Here we get the actual content from the Sidweb's topic");
+	console.log($element.querySelector(".user_name").innerHTML); // teacher's name...
+	// console.log($element.querySelector(".content").querySelector(".message_short"));
+	splittedMessage = $element.querySelector(".content").querySelector(".message_short");
+	let children = splittedMessage.childNodes;
+	for(let i = 0; i < children.length; i++) {
+	    if (children[i].innerHTML !== null) {
+		console.log(children[i].innerHTML);
+	    }
+	}
+    }
+};

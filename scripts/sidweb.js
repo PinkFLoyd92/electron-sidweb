@@ -1,3 +1,6 @@
+const notifier = require("./scripts/ContentNotifier.js");
+const spawn = require('child_process').spawn;
+
 function init() {
     console.log("init...");
 
@@ -16,11 +19,25 @@ function init() {
 	let message = evt.channel;
 	let parser = new DOMParser();
 	let element = parser.parseFromString(message, "text/html");
-	arrContents = element.getElementsByClassName("header");
+	arrContents = element.getElementsByClassName("announcement");
 	arrContents = Array.from(arrContents);
-	arrContents = arrContents.slice(0, arrContents.length - 1);
-	console.log(arrContents[0].innerHTML);
+	for (var i in arrContents) {
+	    let arrTopic = notifier.getContent(arrContents[i]);
+	    let teacher = arrTopic[0];
+	    const notification = spawn('./notify.sh', [teacher]);
+	    notification.stdout.on('data', (data) => {
+		console.log(`stdout: ${data}`);
+	    });
 
+	    notification.stderr.on('data', (data) => {
+		console.log(`stderr: ${data}`);
+	    });
+
+	    notification.on('close', (code) => {
+		console.log(`child process exited with code ${code}`);
+	    });
+
+	}
     });
 }
 
