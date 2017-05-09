@@ -219,8 +219,8 @@ rules:
   padded-blocks: 0
   quote-props: 0
   quotes:
-    - 2
-    - double
+    - 1
+    - single
   semi-spacing:
     - 2
     - before: false

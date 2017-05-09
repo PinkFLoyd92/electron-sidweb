@@ -1,20 +1,32 @@
-"use-strict";
-const {app, BrowserWindow} = require("electron");
+'use-strict';
+const electron = require('electron');
+const fs       = require('fs');
+const path     = require('path');
+const TrayIcon = require('./tray.js');
 
+const {app} = electron;
 let mainWindow;
 
-// Quit when all windows are closed.
-app.on("window-all-closed", function() {
-    if (process.platform !== "darwin")
-	{app.quit();}
+let shouldQuit = app.makeSingleInstance(() => {
+	if (mainWindow) {
+		mainWindow.show();
+		mainWindow.focus();
+	}
 });
 
-// This method will be called when Electron has done everything
-// initialization and ready for creating browser windows.
-app.on("ready", function() {
+if (shouldQuit) {
+	app.quit();
+}
 
+
+app.setName('Sidweb');
+app.on('before-quit', () => shouldQuit = true);
+
+app.on('ready', () => {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new electron.BrowserWindow({width: 800,
+					     height: 600,
+					     icon: app.getAppPath() + '/assets/tray/sidweb.png'});
 
     // and load the index.html of the app
     mainWindow.loadURL("file://" + __dirname + "/index.html");
@@ -22,15 +34,11 @@ app.on("ready", function() {
     mainWindow.openDevTools();
 
     // Emitted when the window is closed.
-    mainWindow.on("closed", function() {
-	// Dereference the window object, usually you would store windows
-	// in an array if your app supports multi windows, this is the time
-	// when you should delete the corresponding element.
+    mainWindow.on('closed', function() {
 	mainWindow = null;
     });
 
-    mainWindow.on("page-title-updated", function(event, title) {
-	console.info("Updated title event fired...." + title);
+    mainWindow.on('page-title-updated', function(event, title) {
+	console.info('Updated title event fired....' + title);
     });
-
 });
