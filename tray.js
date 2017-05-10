@@ -3,10 +3,15 @@ const electron = require('electron');
 let trayIcon = null;
 let mainWindow = null;
 let basePath = null;
+const remote = require('electron').remote;
+const appPath = (function () {
+    if(process.env.NODE_ENV === 'production') return remote.app.getAppPath();
+    return __dirname;
+})();
 
 exports.init = function(window) {
 	mainWindow = window;
-	basePath = electron.app.getAppPath() + '/assets/tray/';
+	basePath = appPath + '/assets/tray/';
 	trayIcon = new electron.Tray(`${basePath}sidweb.png`);
 
 	trayIcon.on('click', toggleOpen);

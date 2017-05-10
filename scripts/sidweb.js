@@ -1,44 +1,80 @@
-const notifier = require("./scripts/ContentNotifier.js");
+const path = require('path');
+const notifier = require(path.join(__dirname, 'ContentNotifier.js'));
 const spawn = require('child_process').spawn;
+const {ipcRenderer} = require('electron');
+const TIMEOUT = 3500;
 
-function init() {
-    console.log("init...");
+/**
+ * Function that allows us to get the new announcements from the sidweb page.
+ *@returns {Dom Element}
+ **/
+let getTopics = () => {
+    let topicList = document.getElementById('topic_list');
+    let element = topicList;
+    let notification;
+    let arrAnnouncements = element.getElementsByClassName('announcement');
+    let arrCommunications = element.getElementsByClassName('communication_message');
+    arrAnnouncements = Array.from(arrAnnouncements);
+    arrCommunications = Array.from(arrCommunications);
+    for (var i in arrCommunications) {
+    	let arrTopic = notifier.getContent(arrCommunications[i], 'communication_message');
+    	let teacher = arrTopic[0];
+	console.log(teacher);
+    	notification = spawn('./notify.sh', [teacher]);
 
-    var webview = document.querySelector("webview");
+	notification.stdout.on('data', (data) => {
+    	    console.log(`stdout: ${data}`);
+	    return teacher;
+	});
 
-    // When everything is ready, trigger the events without problems
-    webview.addEventListener("dom-ready", function() {
-	if (this.getTitle().toString().includes("Actividad")) {
-	    console.info("DOM-Ready, triggering events !");
-	    webview.send("request");
+	notification.stderr.on('data', (data) => {
+    	    console.log(`stderr: ${data}`);
+	});
+
+	notification.on('close', (code) => {
+    	    console.log(`child process exited with code ${code}`);
+	});
+
+    }
+    for (var i in arrAnnouncements) {
+    	let arrTopic = notifier.getContent(arrAnnouncements[i], 'announcement');
+    	let teacher = arrTopic[0];
+	console.log(teacher);
+    	notification = spawn('./notify.sh', [teacher]);
+
+	notification.stdout.on('data', (data) => {
+    	    console.log(`stdout: ${data}`);
+	    return teacher;
+	});
+
+	notification.stderr.on('data', (data) => {
+    	    console.log(`stderr: ${data}`);
+	});
+
+	notification.on('close', (code) => {
+    	    console.log(`child process exited with code ${code}`);
+	});
+
+    }
+};
+
+/**
+ * The main process is the one who asks for the topics from the renderer process.
+ *@returns {Dom Element}
+ **/
+
+exports.init = function() {
+    // });
+    let checkUpdates = () => {
+	setInterval(function () {
+	    ipcRenderer.send('topic-dom', getTopics());
+            ipcRenderer.send('refresh');
 	}
-    });
-
+		    , TIMEOUT); // Refreshing the sidweb.)
+    };
+    checkUpdates();
     // Process the data from the webview
-    webview.addEventListener("ipc-message", function(evt){
-	let message = evt.channel;
-	let parser = new DOMParser();
-	let element = parser.parseFromString(message, "text/html");
-	arrContents = element.getElementsByClassName("announcement");
-	arrContents = Array.from(arrContents);
-	for (var i in arrContents) {
-	    let arrTopic = notifier.getContent(arrContents[i]);
-	    let teacher = arrTopic[0];
-	    const notification = spawn('./notify.sh', [teacher]);
-	    notification.stdout.on('data', (data) => {
-		console.log(`stdout: ${data}`);
-	    });
+    // webview.addEventListener("ipc-message", function(evt){
+    // });
+};
 
-	    notification.stderr.on('data', (data) => {
-		console.log(`stderr: ${data}`);
-	    });
-
-	    notification.on('close', (code) => {
-		console.log(`child process exited with code ${code}`);
-	    });
-
-	}
-    });
-}
-
-document.addEventListener("DOMContentLoaded", init);
